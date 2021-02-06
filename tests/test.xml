@@ -1,7 +1,3 @@
-import lxml.etree as ET
-from dxml.TreeParser import TreeParser
-
-xml = ET.fromstring("""
 <items>
 	<item id="0001" type="donut">
 		<name>Cake</name>
@@ -23,11 +19,3 @@ xml = ET.fromstring("""
 	</item>
 	<batter id="1003">Blueberry</batter>
 </items>
-""")
-
-defaults = {"id": ["1001","1002"], "sid": ["010", "011", "012"]}
-# TreeParser(xml).parse("!batter.ssid", "10#")
-TreeParser(xml).parse("item.batters.batter[*].sid", "01#")
-TreeParser(xml).parse("item...batter[@id && @sid].xid", "120#", defaults = defaults)
-# TreeParser(xml).parse("item...batters.Tag<id:11 && @sid>.xids", "1", defaults = defaults)
-ET.dump(xml)

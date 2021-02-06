@@ -1,5 +1,0 @@
-# a comment
-Header<id:12 && link=href_some_text>Sample Text
-Header.SampleTag<@ids>
-    SampleSubTag<@other>
-        ReallyNested<@really>@Text

@@ -1,6 +1,5 @@
 from typing import Union, List, Optional, Tuple, Dict, Any
 from enum import Enum
-from omen_funcs.misc import TCLR
 import lxml.etree as ET
 import re
 
@@ -8,11 +7,13 @@ class BadValue(Exception): pass
 class BadExpression(Exception): pass
 class Missmatched(Exception): pass
 
+# You may edit the tokens to customize the language to your likings
 class Token(Enum):
     TAG      = "TAG"
     ATTR     = "ATTR"
     PROP     = "PROPOSITION"
     DOT      = "."
+    TERM     = ";"
     SKIP     = "..."
     FINDALL  = "!"
     SHIELD   = "\\"
@@ -21,6 +22,7 @@ class Token(Enum):
     OPENTAG  = "<"
     CLOSETAG = ">"
     SEP      = ":"
+    ALT_SEP  = "="
     OR       = "||"
     AND      = "&&"
     REF      = "@"
@@ -96,6 +98,14 @@ class TreeParser:
             i+=1
 
     def __tokenize(self, expr: str):
+        """General tokenizer that will produce resulting token stream
+
+        Args:
+            expr (str): A single line of expression
+
+        Raises:
+            BadExpression: Given expression contains syntax errors
+        """
         self.tokens = []
         ptr = 0
         in_brace = False
@@ -161,6 +171,9 @@ class TreeParser:
                 self.tokens.append(Token.QSIGN)
                 self.tokens.append((Token.ATTR, word_acc))
                 word_acc = ""
+            elif expr[ptr] == Token.TERM.value: 
+                self.tokens.append(Token.TERM)
+                word_acc = ""
             else:
                 if expr[ptr]!=" ":
                     word_acc += expr[ptr]
@@ -171,29 +184,31 @@ class TreeParser:
 
 
     def parse(self, expr: str, value: Optional[Union[str, List[str]]] = None, const: Optional[bool] = False, defaults: Optional[Dict[str, Union[str, List[str]]]] = None) -> Union[ET.Element, List[ET.Element]]:
-        '''
+        f'''
         Parses XML tree according to the `expr` and puts the `value` at the end.
         Operators:
-            .   -- A common seperator that takes the first found tag
-            ... -- A seperator that skips tags until the first match was found
-            !   -- Specifies to find matches across the whole document
-            ?   -- Change only existing occurances of the attribute
-            *   -- Wildcards/masks that can be applied anywhere in the expression except tag creation
-            @   -- Lookup inside the defaults dictionary
-            :   -- A seperator that specifies Attribute and Value
-            \   -- Shielding of special characters
-            <A: V && @A>  -- Create a tag and select it where 
+            {Token.DOT}   -- A common seperator that takes the first found tag
+            {Token.SKIP} -- A seperator that skips tags until the first match was found
+            {Token.FINDALL}   -- Specifies to find matches across the whole document
+            {Token.QSIGN}   -- Change only existing occurances of the attribute
+            {Token.WILDCARD}   -- Wildcards/masks that can be applied anywhere in the expression except tag creation
+            {Token.REF}   -- Lookup inside the defaults dictionary
+            {Token.SEP}|{Token.ALT_SEP} -- A seperator that specifies Attribute and Value
+            {Token.SHIELD}   -- Shielding of special characters
+            {Token.TERM}   -- End of the expression
+            N{Token.OPENTAG}A{Token.SEP} V {Token.AND} {Token.REF}A{Token.CLOSETAG}T  -- Create a tag and select it where 
                 A  -- attribute name
                 V  -- its value
-                && -- Any devider would do
-                @  -- Inserts dictionary value by a given key
-            [A: V || A: V && V && @A]  -- A conditional predicate that filters tags where
+                T  -- tag text value
+                {Token.AND} -- Any devider would do
+                {Token.REF}  -- Inserts dictionary value by a given key
+            {Token.OPENBR}A{Token.SEP} V {Token.OR} A{Token.SEP} V {Token.AND} V {Token.AND} {Token.REF}A{Token.CLOSEBR}  -- A conditional predicate that filters tags where
                 A  -- attribute name
-                V  -- its value
-                || -- disjunction operator
-                && -- conjunction operator
-                @  -- Checks dictionary by a given key
-        Example:
+                V  -- attribute value; can be matched in conjunction with A, or on its own
+                {Token.OR} -- disjunction operator
+                {Token.AND} -- conjunction operator
+                {Token.REF}  -- Checks dictionary by a given key
+        Example with the default syntax:
             xml = etree.fromstring(r"/home/user/xmltest.xml")
             tp = TreeParser(tree = xml)
 
@@ -228,6 +243,8 @@ class TreeParser:
             """
             tp.parse(value = "12", expr = "Axes.Axis[*].Lambda", const = True)
         '''
+        if ';' not in expr:
+            expr += ';'
         self.__tokenize(expr)
         tb = f"{self.name}::Tag.item"
         current_tag = [self.tree]

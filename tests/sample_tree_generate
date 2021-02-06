@@ -1,0 +1,9 @@
+// a comment
+// You need to set a DOCUMENT at the beggining of the file
+// This will declare a root tag
+ROOT: MyXMLTest
+
+Header<id:12 && link=href_some_text>.sampleTag<>Sample Text;
+Header.SampleTag<@ids>\         // You may declare nested tags with \
+    .SampleSubTag<@other>\      // Identation is not a problem
+        .ReallyNested<@really>@Text;
