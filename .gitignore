@@ -1,0 +1,9 @@
+env
+__pycache__
+*.pyc
+.mypy
+.vscode
+
+build
+dist
+*egg-info
