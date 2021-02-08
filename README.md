@@ -1,12 +1,10 @@
 ![img](img/dxml.jpg)
 
-
-A declarative xml tree DSL capable of edition and generation written in Python
+A DSL capable of editing and generating xml tags written in Python
 
 ## Why?
 
-Lxml is great and fast library to manipulate xml tree structure! However, I find its API outdated and in need of a refresh. Furthermore, xml is very widespread and its users might be clueless about programming, and they don't want to learn a general purpose programming language to build or edit xml documents. I believe that the **data should be** configured by the input values **not the source code**. 
-
+Lxml is great and fast library to manipulate xml tree structure! However, I find its API outdated and in need of a refresh. Furthermore, xml is very widespread and its users might be clueless about programming, and they don't want to learn a general purpose programming language to build or edit xml documents. I believe that **data should be** configured by the input values, **not the source code**. 
 
 ## Installation
 
