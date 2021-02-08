@@ -1,4 +1,6 @@
-# DXML
+![img](img/dxml.jpg)
+
+
 A declarative xml tree DSL capable of edition and generation written in Python
 
 ## Why?
@@ -8,7 +10,7 @@ Lxml is great and fast library to manipulate xml tree structure! However, I find
 
 ## Installation
 
-### Pypi
+### Pip
 ```sh
 pip install dxml
 ```
@@ -21,9 +23,14 @@ cd DXML && pip install .
 
 ## Usage 
 
-Simply 
+From shell
+```sh
+dxml my_config.dxml -o generated.xml
+```
+
+From python
 ```python 
-from dxml import TreeParser
+from dxml import TreeParser, execute
 ````
 
 ### dxml internal working

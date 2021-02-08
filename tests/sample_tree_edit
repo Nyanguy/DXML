@@ -1,11 +1,11 @@
-// You need to set a DOCUMENT at the beggining of the file
+// You need to set a document at the beggining of the file
 // This will load an xml from a provided path
 // Link to a document
 DOCUMENT: test.xml
 
 //N.B. You may specify another xml later in the document
-// DOCUMENT: other.xml <-- Overrides the pointer to current file "test.xml"
+// document: other.xml <-- Overrides the pointer to current file "test.xml"
 
 // match inside <batters...> every <batter...> and create enumerated attribute `sid`
-item.batters.batter[*].sid=01#
-item...batter[@id && @sid].xid=120#
+item.batters.batter[*].sid=01#;
+item...batter[@id && @sid].xid=120#;

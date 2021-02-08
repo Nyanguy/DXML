@@ -1,9 +1,22 @@
-// a comment
-// You need to set a DOCUMENT at the beggining of the file
+// You need to set a DOCUMENT|ROOT at the beggining of the file
 // This will declare a root tag
-ROOT: MyXMLTest
+ROOT: myXMLRootTag;
 
-Header<id:12 && link=href_some_text>.sampleTag<>Sample Text;
-Header.SampleTag<@ids>\         // You may declare nested tags with \
-    .SampleSubTag<@other>\      // Identation is not a problem
-        .ReallyNested<@really>@Text;
+// This will set out variables. json, toml and yaml are ok!
+VARS: path/to/my_vars.json;
+
+// generate a tag <Header id="12" link="href_some_text"/> <sampleTag attr="10"/> </Header>
+Header<id:12 && link:href_some_text>.sampleTag<>.attr:10;
+
+// '=' also works for attribute assignment
+Header<id:13 && link=href_some_text>.sampleTag<>.attr=11;
+
+// Generate tag with values from VARS
+// @ refers to the key and pastes its value
+// key may be associated with lists as well!
+otherHeader.anotherTag<@ids>\         // You may declare nested tags with \
+            .sampleSubTag<@other>\      // Identation is not a problem
+            .reallyNested<@really>@Text;
+
+// VARS values must match! Unless default value is specified
+differentTag.subTag<@ids @matching_len @wrong_len:default_value>;
