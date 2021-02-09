@@ -1,4 +1,4 @@
-![img](img/dxml.jpg =400x400)
+<img src="img/dxml.jpg" width="300"/>
 
 A DSL capable of editing and generating xml tags written in Python
 
