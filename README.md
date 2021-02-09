@@ -1,4 +1,4 @@
-![img](img/dxml.jpg)
+![img](img/dxml.jpg =400x400)
 
 A DSL capable of editing and generating xml tags written in Python
 
@@ -29,9 +29,9 @@ dxml my_config.dxml -o generated.xml
 From python
 ```python 
 from dxml import TreeParser, execute
-````
+```
 
-### dxml internal working
+### DXML syntax
 
 |entity|description|
 |:----:|:---------:|
@@ -56,7 +56,7 @@ from dxml import TreeParser, execute
 |`\`  |applyed anywhere|Shiedling of special characters|
 
 
-You may redefine the syntax as you please! Just look into the `TreeParser::Token`.
+You may redefine the syntax as you please! Just look into the `TreeParser::Token` and .
 
 **TreeParser** is a class that parses XML tree structure by using a simple DSL (_Domain Specific Language_) and changes it's values according to the supplied command. Document is changed by reference that is supplied to the constructor.
 

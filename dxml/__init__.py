@@ -1,2 +1,2 @@
 from .TreeParser import TreeParser
-from .exec import execute
+from .interpreter import execute

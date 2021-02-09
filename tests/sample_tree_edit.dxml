@@ -1,0 +1,21 @@
+// You need to set a document at the beggining of the file
+// This will load an xml from a provided path
+// Link to a document
+LOAD: test.xml;
+
+//N.B. You may specify another xml later in the document
+// document: other.xml <-- Overrides the pointer to current file "test.xml"
+
+// Store a reference to a selection of tags
+// NB it would forshadow the first tag call
+let batters: item.batters.batter[id:1*];
+
+// match inside <batters...> every <batter...> and create enumerated attribute `sid`
+item.batters.batter[*].sid:01#;
+item...batter[@id && @sid].xid=120#;
+
+// Creates <newTag xltd="11"/> in the item.batters.batter[id:1*] 
+batters.newTag<>.xltd=11;
+
+// You may call the SAVE function to write file to the disc
+SAVE: tmp.xml

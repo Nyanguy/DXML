@@ -1,40 +1,22 @@
-from typing import Union, List, Optional, Tuple, Dict, Any
-from enum import Enum
+from typing import Union, List, Optional, Tuple, Dict
+from .tokens import Token, tokenize_expression, BadExpression
 import lxml.etree as ET
 import re
 
-class BadValue(Exception): pass
-class BadExpression(Exception): pass
-class Missmatched(Exception): pass
 
-# You may edit the tokens to customize the language to your likings
-class Token(Enum):
-    TAG      = "TAG"
-    ATTR     = "ATTR"
-    PROP     = "PROPOSITION"
-    DOT      = "."
-    TERM     = ";"
-    SKIP     = "..."
-    FINDALL  = "!"
-    SHIELD   = "\\"
-    OPENBR   = "["
-    CLOSEBR  = "]"
-    OPENTAG  = "<"
-    CLOSETAG = ">"
-    SEP      = ":"
-    ALT_SEP  = "="
-    OR       = "||"
-    AND      = "&&"
-    REF      = "@"
-    WILDCARD = "*"
-    QSIGN    = "?"
+class BadValue(Exception): pass
+class Missmatched(Exception): pass
 
 
 def check_order(token, rules: Dict, stack: List):
-    if not stack: return False
-    try: return rules[token] <= rules[stack[-1]]
-    except KeyError: return False
-    except TypeError: return False
+    if not stack:
+        return False
+    try:
+        return rules[token] <= rules[stack[-1]]
+    except KeyError:
+        return False
+    except TypeError:
+        return False
 
 
 def infix_to_postfix(token_stream: List, rules: Dict) -> List:
@@ -64,24 +46,12 @@ def infix_to_postfix(token_stream: List, rules: Dict) -> List:
         result.append(stack.pop())
     return result
 
-
 class TreeParser:
     """A useful tool to quickly modify a known XML Tree structure"""
     def __init__(self, tree: ET.Element, stage_name: Optional[str] = ""):
         self.tokens = []
         self.name   = stage_name
         self.tree   = tree
-
-
-    def __tokens_check_opcl(self):
-        i = 0
-        for t in self.tokens:
-            if t == Token.OPENBR or t == Token.OPENTAG:
-                i += 1
-            elif t == Token.CLOSEBR or t == Token.CLOSETAG:
-                i -= 1
-        if i != 0:
-            raise BadExpression("Missmatched number of opening and closing braces. Please check your expression.")
 
     
     def __tokens_set_ref(self, defaults: Dict[str, Union[List[str], str]]):
@@ -97,97 +67,12 @@ class TreeParser:
                     self.tokens[i+1] = (Token.PROP, defaults[next_token[1]])
             i+=1
 
-    def __tokenize(self, expr: str):
-        """General tokenizer that will produce resulting token stream
-
-        Args:
-            expr (str): A single line of expression
-
-        Raises:
-            BadExpression: Given expression contains syntax errors
-        """
-        self.tokens = []
-        ptr = 0
-        in_brace = False
-        word_acc = ""
-        while ptr != len(expr):
-            if not in_brace and expr[ptr] == Token.DOT.value:
-                if word_acc:
-                    self.tokens.append((Token.TAG,word_acc))
-                    word_acc = ""
-                if len(expr)-1 > ptr+2 and expr[ptr:ptr+3] == Token.SKIP.value:
-                    self.tokens.append(Token.SKIP)
-                    ptr += 2
-            elif not in_brace and expr[ptr] == Token.FINDALL.value:
-                self.tokens.append(Token.FINDALL)
-                word_acc = ""
-            elif expr[ptr] == Token.SHIELD.value:
-                word_acc += expr[ptr+1]
-                ptr+=1
-            elif expr[ptr] == Token.OPENBR.value: 
-                in_brace = True
-                self.tokens.append((Token.TAG,word_acc))
-                self.tokens.append(Token.OPENBR)
-                word_acc = ""
-            elif expr[ptr] == Token.CLOSEBR.value: 
-                in_brace = False
-                self.tokens.append((Token.PROP,word_acc))
-                self.tokens.append(Token.CLOSEBR)
-                word_acc = ""
-            elif expr[ptr] == Token.OR.value[0] and expr[ptr:ptr+2] == Token.OR.value: 
-                self.tokens.append((Token.PROP,word_acc))
-                self.tokens.append(Token.OR)
-                word_acc = ""
-                ptr += 1
-            elif expr[ptr] == Token.AND.value[0] and expr[ptr:ptr+2] == Token.AND.value: 
-                self.tokens.append((Token.PROP,word_acc))
-                self.tokens.append(Token.AND)
-                word_acc = ""
-                ptr += 1
-            elif expr[ptr] == Token.REF.value:
-                if not in_brace:
-                    raise BadExpression("'@' lookup operator can be only inside the braces (<>,[])")
-                self.tokens.append(Token.REF)
-                word_acc = ""
-            elif expr[ptr] == Token.SEP.value:   
-                self.tokens.append((Token.ATTR,word_acc))
-                self.tokens.append(Token.SEP)
-                word_acc = ""
-            elif expr[ptr] == Token.WILDCARD.value:
-                self.tokens.append((Token.WILDCARD, len(word_acc)))
-                if ptr == len(expr)-1:
-                    self.tokens.append((Token.ATTR, word_acc))
-            elif expr[ptr] == Token.OPENTAG.value: 
-                in_brace = True
-                self.tokens.append((Token.TAG, word_acc))
-                self.tokens.append(Token.OPENTAG)
-                word_acc = ""
-            elif expr[ptr] == Token.CLOSETAG.value: 
-                in_brace = False
-                self.tokens.append((Token.PROP, word_acc))
-                self.tokens.append(Token.CLOSETAG)
-                word_acc = ""
-            elif expr[ptr] == Token.QSIGN.value: 
-                self.tokens.append(Token.QSIGN)
-                self.tokens.append((Token.ATTR, word_acc))
-                word_acc = ""
-            elif expr[ptr] == Token.TERM.value: 
-                self.tokens.append(Token.TERM)
-                word_acc = ""
-            else:
-                if expr[ptr]!=" ":
-                    word_acc += expr[ptr]
-                if ptr == len(expr)-1:
-                    self.tokens.append((Token.ATTR, word_acc))
-            ptr += 1
-        self.__tokens_check_opcl()
-
 
     def parse(self, expr: str, value: Optional[Union[str, List[str]]] = None, const: Optional[bool] = False, defaults: Optional[Dict[str, Union[str, List[str]]]] = None) -> Union[ET.Element, List[ET.Element]]:
         f'''
         Parses XML tree according to the `expr` and puts the `value` at the end.
         Operators:
-            {Token.DOT}   -- A common seperator that takes the first found tag
+            {Token.SELECTOR}   -- A common seperator that takes the first found tag
             {Token.SKIP} -- A seperator that skips tags until the first match was found
             {Token.FINDALL}   -- Specifies to find matches across the whole document
             {Token.QSIGN}   -- Change only existing occurances of the attribute
@@ -197,8 +82,9 @@ class TreeParser:
             {Token.SHIELD}   -- Shielding of special characters
             {Token.TERM}   -- End of the expression
             N{Token.OPENTAG}A{Token.SEP} V {Token.AND} {Token.REF}A{Token.CLOSETAG}T  -- Create a tag and select it where 
+                N  -- tag name 
                 A  -- attribute name
-                V  -- its value
+                V  -- attribute value
                 T  -- tag text value
                 {Token.AND} -- Any devider would do
                 {Token.REF}  -- Inserts dictionary value by a given key
@@ -243,13 +129,22 @@ class TreeParser:
             """
             tp.parse(value = "12", expr = "Axes.Axis[*].Lambda", const = True)
         '''
+        # cleans the expression
+        print(expr)
+        expr = ''.join(map(lambda s: s.strip(), expr.splitlines()))
+        print(expr)
         if ';' not in expr:
             expr += ';'
-        self.__tokenize(expr)
+        self.tokens = tokenize_expression(expr)
         tb = f"{self.name}::Tag.item"
         current_tag = [self.tree]
-        if self.tokens[-1][0] not in [Token.ATTR, Token.TAG]:
-            raise BadExpression(f"Expression should end with an attribute or a tag, not {self.tokens[-1]}")
+        print(self.tokens)
+
+        if self.tokens[-1] != Token.TERM:
+            raise BadExpression(f"Expression must end with ';'")
+
+        # if self.tokens[-1][0] not in [Token.ATTR, Token.TAG]:
+        #     raise BadExpression(f"Expression should end with an attribute or a tag, not {self.tokens[-1]}")
         
         if Token.REF in self.tokens: 
             if defaults is None:
@@ -270,6 +165,9 @@ class TreeParser:
 
             if isinstance(token, tuple):
                 token, t_value = token 
+                
+                if token == Token.TERM:
+                    current_tag = [self.tree]
 
                 if token == Token.WILDCARD:
                     wildcards.append(t_value)
@@ -290,52 +188,28 @@ class TreeParser:
                         raise BadValue(f"{tb} => {t_value}\n\t No such tag in the config")
                     tb += f"::{current_tag[0].tag}"
                     mask = ""
-                
-                elif token == Token.ATTR:
-                    if value is None: 
-                        return
-                    text = self.__insert_wildcard(wildcards, t_value)
-                    if const:
-                        value = [value for _ in range(len(current_tag))]
+
+                elif token == Token.PROP:
+                    # Should obey the structure [..., ATTR, SEP, PROP]
+                    if self.tokens[i-1] == Token.SEP and self.tokens[i-2][0] == Token.ATTR:
+                        self.assign_value(
+                            current_tag, [t_value], wildcards, self.tokens[i-2][1], const, tb, entity_required)
                     else:
-                        if "#" in value:
-                            value = [value.replace("#", str(j)) for j in range(len(current_tag))]
-                        else:
-                            if len(value) != len(current_tag):
-                                raise Missmatched(f"{tb} >>\n\tLength of values does not match length of tags: {len(value)}(values) != {len(current_tag)}(tags)\n ")
-                            value = [value[i] for i in range(len(current_tag))]
-                    
-                    if wildcards:       # FOR *  and  ?
-                        empty_match = True
-                        tag = None
-                        for j,tag in enumerate(current_tag):
-                            for k in tag.attrib:
-                                if re.match(text, k):
-                                    empty_match = False
-                                    tag.attrib[k] = value[j]
-                        
-                        if tag is None:
-                            raise BadValue(f"{tb}::{current_tag} >> EMPTY\n\t Failed to retrieve a element child.")
-                        
-                        elif empty_match:
-                            raise BadValue(f"{tb}::{tag.tag} = {text}\n\t There is no match for the attribute")
-                    elif entity_required:         # FOR ?
-                        for j, tag in enumerate(current_tag):
-                            if text in tag.attrib:
-                                tag.attrib[text] = value[j]
-                            else: 
-                                raise BadValue(f"{tb}::{tag.tag} = {text}\n\t There is no match for the attribute")
-                    else:               # FOR PLANE ATTR
-                        for j,tag in enumerate(current_tag):
-                            tag.attrib[text] = value[j]
+                        raise BadExpression(f"Failed to create value {t_value}. Token::ATTR is missing.")
                     wildcards = []
+
+                elif token == Token.ATTR:
+                    print(f"IN ATTR: {self.tokens[i:]}")
+                    if value is not None: 
+                        self.assign_value(current_tag, value, wildcards, t_value, const, tb, entity_required)
+                        wildcards = []
                 
             elif token == Token.SKIP: 
-                tb += f"::..."
+                tb += f"::{Token.SKIP.value}"
                 mask = './/'
             
             elif token == Token.FINDALL:
-                tb += f"::!"
+                tb += f"::{Token.FINDALL.value}"
                 mask = './/'
                 tag_find_many = True
 
@@ -369,8 +243,8 @@ class TreeParser:
 
                 elif token == Token.PROP:
                     if not stack:
-                        raise BadValue(f"{tb} = {t_value}\n\t Stack is empty. Please specify the attribute name")
-                    
+                        continue
+                        # raise BadValue(f"{tb} = {t_value}\n\t Stack is empty. Please specify the attribute name")
                     attr = stack.pop()
                     if not isinstance(t_value, list):
                         for tag in current_tag:
@@ -488,6 +362,49 @@ class TreeParser:
             elif self.tokens[i] == Token.CLOSETAG:
                 break
         return num_of_tags
+
+
+    def assign_value(self, current_tag: List[ET.Element], value: str, wildcards: List, t_value: str, const: bool, tb: str, entity_required: bool):
+        text = self.__insert_wildcard(wildcards, t_value)
+        if const:
+            value = [value for _ in range(len(current_tag))]
+        else:
+            if "#" in value:
+                value = [value.replace("#", str(j))
+                                        for j in range(len(current_tag))]
+            else:
+                if len(value) != len(current_tag):
+                    raise Missmatched(
+                        f"{tb} >>\n\tLength of values does not match length of tags: {len(value)}(values) != {len(current_tag)}(tags)\n ")
+                value = [value[i] for i in range(len(current_tag))]
+
+        if wildcards:       # FOR *  and  ?
+            empty_match = True
+            tag = None
+            for j, tag in enumerate(current_tag):
+                for k in tag.attrib:
+                    if re.match(text, k):
+                        empty_match = False
+                        tag.attrib[k] = value[j]
+
+            if tag is None:
+                raise BadValue(
+                    f"{tb}::{current_tag} >> EMPTY\n\t Failed to retrieve a element child.")
+
+            elif empty_match:
+                raise BadValue(
+                    f"{tb}::{tag.tag} = {text}\n\t There is no match for the attribute")
+
+        elif entity_required:         # FOR ?
+            for j, tag in enumerate(current_tag):
+                if text in tag.attrib:
+                    tag.attrib[text] = value[j]
+                else:
+                    raise BadValue(
+                        f"{tb}::{tag.tag} = {text}\n\t There is no match for the attribute")
+        else:               # FOR PLANE ATTR
+            for j, tag in enumerate(current_tag):
+                tag.attrib[text] = value[j]
 
 
     def __insert_wildcard(self, wildcards: List, text: str) -> str:

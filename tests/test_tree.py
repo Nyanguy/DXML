@@ -26,8 +26,12 @@ xml = ET.fromstring("""
 """)
 
 defaults = {"id": ["1001","1002"], "sid": ["010", "011", "012"]}
-# TreeParser(xml).parse("!batter.ssid", "10#")
-TreeParser(xml).parse("item.batters.batter[*].sid", "01#")
-TreeParser(xml).parse("item...batter[@id && @sid].xid", "120#", defaults = defaults)
-# TreeParser(xml).parse("item...batters.Tag<id:11 && @sid>.xids", "1", defaults = defaults)
+tp = TreeParser(xml)
+tp.parse("!batter.ssid", "10#")
+tp.parse("item.batters.batter[*].sid", "01#")
+tp.parse("item.topping[id=5002].sid:11")
+tp.parse("item...batter[@id && @sid].xid", "120#", defaults = defaults)
+tp.parse("item...batters.Tag<id:11 && @sid>.xids", "1", defaults = defaults)
+tp.parse(
+    "item...batter[*].newTag<>.AnoterTag<>.xids", "1", defaults=defaults)
 ET.dump(xml)
