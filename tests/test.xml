@@ -13,8 +13,8 @@
 		<topping id="5002">Glazed</topping>
 		<topping id="5005">Sugar</topping>
 		<topping id="5006">Sprinkles</topping>
-		<topping id="5003">Chocolate</topping>
-		<topping id="5004">Maple</topping>
+		<topping id="2003">Chocolate</topping>
+		<topping id="2004">Maple</topping>
 		<batter id="1003">Blueberry</batter>
 	</item>
 	<batter id="1003">Blueberry</batter>

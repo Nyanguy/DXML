@@ -1,4 +1,5 @@
 // You need to set a DOCUMENT|ROOT at the beggining of the file
+// unless you've specified document in the CLI
 // This will declare a root tag
 ROOT: myXMLRootTag;
 
