@@ -2,9 +2,13 @@
 
 A DSL capable of editing and generating xml tags written in Python
 
+[WIP] no stable release yet
+
+
 ## Why?
 
-Lxml is great and fast library to manipulate xml tree structure! However, I find its API outdated and in need of a refresh. Furthermore, xml is very widespread and its users might be clueless about programming, and they don't want to learn a general purpose programming language to build or edit xml documents. I believe that **data should be** configured by the input values, **not the source code**. 
+Lxml is a **great and fast** library to manipulate xml tree structure! However, I find its API outdated and in need of a refresh. When you are in need of generating multiple different xml documents over time, it is a pain to write a new implementation or fix an existing one, so here is a simple general solution for that. Furthermore, xml is very widespread and its users don't want to learn a general purpose programming language to build|edit|search xml documents. DXML syntax is very easy to follow and it can be easily changed to your preferences.    
+I believe that **data should be configured by the input values, not the source code**. 
 
 ## Installation
 
