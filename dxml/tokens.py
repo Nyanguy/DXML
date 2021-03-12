@@ -5,6 +5,7 @@ class BadExpression(Exception): pass
 
 # You may edit the tokens to customize the language to your likings
 class Token(Enum):
+    """General token deffinitions"""
     TAG = "TAG"              # This value is unused
     ATTR = "ATTR"            # This value is unused
     PROP = "PROPOSITION"     # This value is unused
@@ -29,7 +30,7 @@ class Token(Enum):
     DOCUMENT = "LOAD"        # Loads new xml document 
     SAVE = "SAVE"            # Saves snapshot of the document
     VARS = "VARS"            # Declares external variables that will be used
-    RAWVALUE = "EXPRESSION"  # This value is unused
+    EXPR = "EXPRESSION"      # This value is unused
     FILEPATH = "FILE_PATH"   # This value is unused
     COMMENT = "//"           # A comment statement
 
