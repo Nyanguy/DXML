@@ -1,13 +1,23 @@
 <img src="img/dxml.jpg" width="300"/>
 
-A DSL capable of editing and generating xml tags written in Python
+A DSL capable of editing and generating xml written in Python
 
 [WIP] no stable release yet
 
 
 ## Why?
 
-Lxml is a **great and fast** library to manipulate xml tree structure! However, I find its API outdated and in need of a refresh. When you are in need of generating multiple different xml documents over time, it is a pain to write a new implementation or fix an existing one, so here is a simple general solution for that. Furthermore, xml is very widespread and its users don't want to learn a general purpose programming language to build|edit|search xml documents. DXML syntax is very easy to follow and it can be easily changed to your preferences.    
+Because it is easy and fast to generate or edit xml document if you known its structure, but changes are significant and condition based. 
+
+
+DXML is similar to the template-based approaches of editing and generating documents, but stripped out of the xml boilerplating. Source code for dxml represents actions on the tree structure (existing or new). A dictionary of `rules | variables` can be applied to the script or interpreter to generate documents faster.
+
+
+If you know lxml or any other library of your choise very well and you feel comfortable writting your own document traversers when needed, then **don't use this package**.
+
+
+Lxml is a **great and fast** library to manipulate xml tree structure! However, its API seems outdated and in need of a refresh. When you are in need of generating multiple different xml documents over time, it is a pain to write a new implementation or fix an existing one, so here is a simple general solution for that. Furthermore, xml is very widespread and its users don't want to learn a general purpose programming language to *_`build | edit | search`_* xml documents. DXML syntax is very easy to follow and it can be easily changed to your preferences.     
+
 I believe that **data should be configured by the input values, not the source code**. 
 
 ## Installation
@@ -35,32 +45,43 @@ From python
 from dxml import TreeParser, execute
 ```
 
-### DXML syntax
+### DXML default syntax
+
+**Entities** -- a collection of special language terms.
 
 |entity|description|
-|:----:|:---------:|
+|:----:|:---------|
 |TAG |Specifies selected tag name in the xml tree|
 |ATTR|Specifies attribute name. Usually stated at the end of the expression or inside the predicate before `:`|
 |PROP|Specifies value of the attribute. Can be attached to the specific attribute or to any one if left without specification|
+|EXPRESSION|Specifies expressions in the executable file|
+|DOCUMENT|Specifies a new xml document or loads an existing one|
+|VARS|Specifies user variables that can be accessed by name|
+|SAVE|Specifies a point at which script would dump to the snapshot|
+|FILEPATH|Specifies paths to either VARS file, DOCUMENT or SAVE|
+|VARIABLE|Specifies a user variable that can store pre selected xml tree|
 
+**Syntax**
 
 |operator|spec|description|
-|:------:|:--:|:---------:|
-|`.`  |only pre TAG   |A common seperator that takes the first found TAG|
-|`...`|only pre TAG   |A seperator that skips TAGs until the first match was found|
-|`!`  |only pre TAG   |Specifies to find matches across all children|
-|`?`  |only after ATTR|Change only existing occurances of the ATTR|
-|`<>` |only after TAG |Brace. Create a TAG(s) and select it/them|
-|`[]` |only after TAG |Brace. A conditional predicate that filters TAGs|
+|:------:|:--:|:---------|
+|`.`  |only before **TAG**   |A common seperator that takes the first found **TAG**|
+|`...`|only before **TAG**   |A seperator that skips **TAGs** until the first match was found|
+|`!`  |only before **TAG**   |Specifies to find matches across all children|
+|`?`  |only after **ATTR**|Change only existing occurances of the **ATTR**|
+|`<>` |only after **TAG** |Braces. Create a **TAG**(s) and select it/them|
+|`[]` |only after **TAG** |Braces. A conditional predicate that filters **TAGs**|
 |`@`  |only inside braces|Lookup inside the defaults dictionary|
-|`:`\|`=`|only inside braces & after ATTR|A seperator that specifies Attribute and Value|
-|`\|\|` |only inside braces & after PROP|disjunction operator|
-|`&&` |only inside braces & after PROP|conjunction operator|
-|`*`  |applyed anywhere except <ATTR:> and TAG|Wildcards/masks that can be applied anywhere in the expression except TAG creation|
+|`:`\|`=`|only inside braces & after **ATTR**|A seperator that specifies Attribute and Value|
+|`\|\|` |only inside braces & after **PROP**|disjunction operator|
+|`&&` |only inside braces & after **PROP**|conjunction operator|
+|`*`  |applyed anywhere except <ATTR:> and **TAG**|Wildcards/masks that can be applied anywhere in the expression except **TAG** creation|
 |`\`  |applyed anywhere|Shiedling of special characters|
 
 
-You may redefine the syntax as you please! Just look into the `TreeParser::Token` and .
+You may redefine the syntax as you please! Just look into the `TreeParser::Token`.
+
+### Interpreter API
 
 **TreeParser** is a class that parses XML tree structure by using a simple DSL (_Domain Specific Language_) and changes it's values according to the supplied command. Document is changed by reference that is supplied to the constructor.
 

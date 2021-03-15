@@ -48,7 +48,7 @@ def infix_to_postfix(token_stream: List, rules: Dict) -> List:
 
 class TreeParser:
     """A useful tool to quickly modify a known XML Tree structure"""
-    def __init__(self, tree: ET.Element, stage_name: Optional[str] = ""):
+    def __init__(self, tree: Union[ET.Element], stage_name: Optional[str] = ""):
         self.tokens = []
         self.name   = stage_name
         self.tree   = tree
@@ -69,31 +69,32 @@ class TreeParser:
 
 
     def parse(self, expr: str, value: Optional[Union[str, List[str]]] = None, const: Optional[bool] = False, defaults: Optional[Dict[str, Union[str, List[str]]]] = None) -> Union[ET.Element, List[ET.Element]]:
-        f'''
+        '''
         Parses XML tree according to the `expr` and puts the `value` at the end.
+        Please refer to the Token enum for more details.
         Operators:
-            {Token.SELECTOR}   -- A common seperator that takes the first found tag
-            {Token.SKIP} -- A seperator that skips tags until the first match was found
-            {Token.FINDALL}   -- Specifies to find matches across the whole document
+            {Token.SELECTOR}-- A common seperator that takes the first found tag
+            {Token.SKIP}    -- A seperator that skips tags until the first match was found
+            {Token.FINDALL} -- Specifies to find matches across the whole document
             {Token.QSIGN}   -- Change only existing occurances of the attribute
-            {Token.WILDCARD}   -- Wildcards/masks that can be applied anywhere in the expression except tag creation
-            {Token.REF}   -- Lookup inside the defaults dictionary
+            {Token.WILDCARD}-- Wildcards/masks that can be applied anywhere in the expression except tag creation
+            {Token.REF}     -- Lookup inside the defaults dictionary
             {Token.SEP}|{Token.ALT_SEP} -- A seperator that specifies Attribute and Value
-            {Token.SHIELD}   -- Shielding of special characters
-            {Token.TERM}   -- End of the expression
+            {Token.SHIELD}  -- Shielding of special characters
+            {Token.TERM}    -- End of the expression
             N{Token.OPENTAG}A{Token.SEP} V {Token.AND} {Token.REF}A{Token.CLOSETAG}T  -- Create a tag and select it where 
                 N  -- tag name 
                 A  -- attribute name
                 V  -- attribute value
                 T  -- tag text value
                 {Token.AND} -- Any devider would do
-                {Token.REF}  -- Inserts dictionary value by a given key
+                {Token.REF} -- Inserts dictionary value by a given key
             {Token.OPENBR}A{Token.SEP} V {Token.OR} A{Token.SEP} V {Token.AND} V {Token.AND} {Token.REF}A{Token.CLOSEBR}  -- A conditional predicate that filters tags where
                 A  -- attribute name
                 V  -- attribute value; can be matched in conjunction with A, or on its own
-                {Token.OR} -- disjunction operator
+                {Token.OR}  -- disjunction operator
                 {Token.AND} -- conjunction operator
-                {Token.REF}  -- Checks dictionary by a given key
+                {Token.REF} -- Checks dictionary by a given key
         Example with the default syntax:
             xml = etree.fromstring(r"/home/user/xmltest.xml")
             tp = TreeParser(tree = xml)

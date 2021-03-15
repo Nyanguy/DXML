@@ -1,10 +1,12 @@
 // You need to set a DOCUMENT|ROOT at the beggining of the file
 // unless you've specified document in the CLI
 // This will declare a root tag
-LOAD: <myXMLRootTag>;
+load: <myXMLRootTag>;
 
 // This will set out variables. json, toml and yaml are ok!
-VARS: path/to/my_vars.json;
+
+//vars: path/to/my_vars.json;
+rules: path/to/my_vars.json;
 
 // generate a tag <Header id="12" link="href_some_text"/> <sampleTag attr="10"/> </Header>
 Header<id:12 && link:href_some_text>.sampleTag<>.attr:10;
