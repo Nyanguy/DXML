@@ -1,0 +1,7 @@
+// Declare Document
+DOCUMENT: test.xml;
+
+// This will return multiple values found in the document
+// Returns statement will be ([Element, Element, ...], [Element, Element, ...])
+ret item.!batter[id=10*];
+ret item.topping[id=2*];
