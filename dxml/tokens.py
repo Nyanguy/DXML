@@ -1,7 +1,9 @@
-from typing import Any, Union, Optional, List, Tuple
+from typing import Union, List, Tuple
 from enum import Enum
 
+
 class BadExpression(Exception): pass
+
 
 # You may edit the tokens to customize the language to your likings
 class Token(Enum):
@@ -80,7 +82,7 @@ def tokenize_expression(expr: str) -> List[Union[Tuple[Token, str], Token]]:
             if word_begin >= 0:
                 tokens.append((Token.TAG, expr[word_begin:ptr].strip()))
                 word_begin = -1
-            if len(expr) > ptr+len(Token.SKIP.value) and __is_token(expr, ptr, Token.SKIP.value):
+            if len(expr) > ptr + len(Token.SKIP.value) and __is_token(expr, ptr, Token.SKIP.value):
                 tokens.append(Token.SKIP)
                 ptr += 2
         elif not in_brace and __is_token(expr, ptr, Token.FINDALL.value):
@@ -121,7 +123,7 @@ def tokenize_expression(expr: str) -> List[Union[Tuple[Token, str], Token]]:
             word_begin = -1
         elif __is_token(expr, ptr, Token.WILDCARD.value):
             tokens.append((Token.WILDCARD, len(expr[word_begin:ptr].strip())))
-            if ptr == len(expr)-1:
+            if ptr == len(expr) - 1:
                 tokens.append((Token.ATTR, expr[word_begin:ptr].strip()))
         elif __is_token(expr, ptr, Token.OPENTAG.value):
             in_brace = True
