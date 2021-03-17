@@ -6,6 +6,7 @@ import re
 
 class BadValue(Exception): pass
 class Missmatched(Exception): pass
+class FailedToOpen(Exception): pass
 
 
 def check_order(token, rules: Dict, stack: List):
@@ -49,10 +50,23 @@ def infix_to_postfix(token_stream: List, rules: Dict) -> List:
 
 class TreeParser:
     """A useful tool to quickly modify a known XML Tree structure"""
-    def __init__(self, tree: Union[ET.Element], stage_name: Optional[str] = ""):
+    def __init__(self, tree: Union[ET.Element, str], proc_name: Optional[str] = ""):
         self.tokens = []
-        self.name   = stage_name
-        self.tree   = tree
+        self.name   = proc_name
+        self.tree   = ET.fromstring(tree) if isinstance(tree, str) else tree
+
+    @classmethod
+    def from_file(cls, path: str, proc_name: str):
+        """Creates TreeParser instance from a given path to the file
+
+        Args:
+            path (str): [description]
+        """
+        try:
+            content = ET.parse(path)
+            cls(content.getroot(), proc_name)
+        except OSError:
+            raise FailedToOpen(f"{path} might be missing")
 
     def __tokens_set_ref(self, defaults: Dict[str, Union[List[str], str]]):
         """[..., @REF, T::PROP, ...] -> [..., T::ATTR, T::PROP, ...]"""
@@ -154,7 +168,7 @@ class TreeParser:
 
         if Token.REF in self.tokens: 
             if defaults is None:
-                raise BadValue("Expression contains external references '@', but no 'defaults' dictionary was provided.")
+                raise BadValue("Expression contains external references '@', but no 'rules' dictionary was provided.")
             self.__tokens_set_ref(defaults)
 
         if isinstance(value, str) and "#" not in value and not const:
@@ -163,7 +177,7 @@ class TreeParser:
         wildcards = []           # State variable that contains wildcard tokens that will be applied to the text
         mask = ""                # State variable that is applied when performing searches
         entity_required = False  # State variable that dictates whether to check an existence of attribute or not
-        tag_find_many   = False  # State variable that dictates whether find many of 1 tag when Token::TAG is encountered
+        tag_find_many   = False  # State variable that dictates whether find many tags when Token::TAG is encountered
         i = 0                    # Current position in the token stream
         while i != len(self.tokens):
             token = self.tokens[i]
@@ -185,10 +199,14 @@ class TreeParser:
                                 tag.append(ET.Element(t_value))
                         tag_find_many = True
                     if tag_find_many:
-                        current_tag = sum([f for f in map(lambda x: x.findall(f"{mask}{t_value}"), current_tag) if f is not None], [])
+                        current_tag = sum([f 
+                                           for f in map(lambda x: x.findall(f"{mask}{t_value}"), current_tag) 
+                                           if f is not None], [])
                         tag_find_many = False
                     else:
-                        current_tag = [f for f in map(lambda x: x.find(f"{mask}{t_value}"), current_tag) if f is not None]
+                        current_tag = [f 
+                                       for f in map(lambda x: x.find(f"{mask}{t_value}"), current_tag) 
+                                       if f is not None]
                     if len(current_tag) == 0:  
                         raise BadValue(f"{tb} => {t_value}\n\t No such tag in the config")
                     tb += f"::{current_tag[0].tag}"
@@ -263,7 +281,9 @@ class TreeParser:
             elif token == Token.CLOSEBR: break
         return i
 
-    def __match_predicate(self, current_tag: Union[List[ET.Element], ET.Element], tokens: List[Token]) -> Tuple[ET.Element, int]: 
+    def __match_predicate(self, 
+                          current_tag: Union[List[ET.Element], ET.Element], 
+                          tokens: List[Token]) -> Tuple[ET.Element, int]: 
         tb = f"{self.name}::Tag.attr"
         stack = []
         wildcards = []
@@ -364,7 +384,14 @@ class TreeParser:
                 break
         return num_of_tags
 
-    def assign_value(self, current_tag: List[ET.Element], value: str, wildcards: List, t_value: str, const: bool, tb: str, entity_required: bool):
+    def assign_value(self, 
+                     current_tag: List[ET.Element], 
+                     value: str, 
+                     wildcards: List, 
+                     t_value: str, 
+                     const: bool, 
+                     tb: str, 
+                     entity_required: bool):
         text = self.__insert_wildcard(wildcards, t_value)
         if const:
             value = [value for _ in range(len(current_tag))]
@@ -375,7 +402,8 @@ class TreeParser:
             else:
                 if len(value) != len(current_tag):
                     raise Missmatched(
-                        f"{tb} >>\n\tLength of values does not match length of tags: {len(value)}(values) != {len(current_tag)}(tags)\n ")
+                        f"{tb} >>\n\tLength of values does not match length of tags: \
+                        {len(value)}(values) != {len(current_tag)}(tags)\n ")
                 value = [value[i] for i in range(len(current_tag))]
 
         if wildcards:       # FOR *  and  ?

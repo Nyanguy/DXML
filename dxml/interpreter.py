@@ -26,12 +26,13 @@ def __string_clean(line: str) -> str:
 
 
 def read_source(config: str, output: Optional[str]) -> Optional[etree.ElementTree]:
-    with open(config, "r") as f:
-        t_stream = __tokenize(f.read())
+    # with open(config, "r") as f:
+    # t_stream = __tokenize(f.read())
+    pass
 
 
 def execute(config: str, output: Optional[str], defaults: Optional[Dict[str, str]]) -> Optional[etree.ElementTree]:
-    """This function can interpret given config file and generate or edit xml tree
+    """This function can interpret given source file and generate or edit xml tree
 
     Args:
         config (str): A path to the config file
@@ -58,4 +59,4 @@ def execute(config: str, output: Optional[str], defaults: Optional[Dict[str, str
             elif line.upper().startswith("VARS"):
                 uvars = __string_clean(line.split(":")[1])
 
-            current_expr += __string_clean(line)
+    current_expr += __string_clean(line)

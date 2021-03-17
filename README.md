@@ -16,7 +16,7 @@ DXML is similar to the template-based approaches of editing and generating docum
 If you know lxml or any other library of your choise very well and you feel comfortable writting your own document traversers when needed, then **don't use this package**.
 
 
-Lxml is a **great and fast** library to manipulate xml tree structure! However, its API seems outdated and in need of a refresh. When you are in need of generating multiple different xml documents over time, it is a pain to write a new implementation or fix an existing one, so here is a simple general solution for that. Furthermore, xml is very widespread and its users don't want to learn a general purpose programming language to *_`build | edit | search`_* xml documents. DXML syntax is very easy to follow and it can be easily changed to your preferences.     
+Lxml is a **great and fast** library to manipulate xml tree structure! However, its API seems unintuitive, which is usually not "pythonic". When you are in need of generating multiple different xml documents over time, it is a pain to write a new implementation or fix an existing one, so here is a simple general solution for that. DXML syntax is very easy to follow and it can be easily changed to your preferences.     
 
 I believe that **data should be configured by the input values, not the source code**. 
 
@@ -60,6 +60,8 @@ from dxml import TreeParser, execute
 |SAVE|Specifies a point at which script would dump to the snapshot|
 |FILEPATH|Specifies paths to either VARS file, DOCUMENT or SAVE|
 |VARIABLE|Specifies a user variable that can store pre selected xml tree|
+|RETURN|Specifies return of a sub-tree|
+
 
 **Syntax**
 

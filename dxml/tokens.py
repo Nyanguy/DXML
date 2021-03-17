@@ -33,11 +33,17 @@ class Token(Enum):
     SAVE = "SAVE"            # Saves snapshot of the document
     VARS = "VARS"            # Declares external variables that will be used
     EXPR = "EXPRESSION"      # This value is unused
+    RETURN = "RETURN"        # Returns current sub-tree selection
     FILEPATH = "FILE_PATH"   # This value is unused
     COMMENT = "//"           # A comment statement
 
 
-def tokenize_file(source: str):
+def tokenize_file(source: str) -> List[Tuple[Union[Token, Tuple[Token, str]], int]]:
+    """Tokenizes input file into a token stream
+
+    Args:
+        source (str): source code
+    """
     ptr = 0
     expr_begins = 0
     t_stream = []

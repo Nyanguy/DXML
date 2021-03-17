@@ -1,10 +1,10 @@
 // You need to set a DOCUMENT|ROOT at the beggining of the file
 // unless you've specified document in the CLI
 // This will declare a root tag
-load: <myXMLRootTag>;
+load tag myXMLRootTag;
+load doc test/test.xml;
 
 // This will set out variables. json, toml and yaml are ok!
-
 //vars: path/to/my_vars.json;
 rules: path/to/my_vars.json;
 
@@ -18,7 +18,7 @@ Header<id:13 && link=href_some_text>.sampleTag<>.attr=11;
 // @ refers to the key and pastes its value
 // key may be associated with lists as well!
 otherHeader.anotherTag<@ids>           // You may declare nested tags with 
-           .sampleSubTag<@other>      // Identation is not a problem
+           .sampleSubTag<@other>       // Identation is not a problem
            .reallyNested<@really>@Text;
 
 // VARS values must match! Unless default value is specified
